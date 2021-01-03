@@ -126,6 +126,25 @@ void test_third_order_response(void)
     TEST_ASSERT_EQUAL_FLOAT_ARRAY(expected, output, ARRAY_SIZE(input));
 }
 
+void test_same_buffer_in_out(void)
+{
+    /* Use the same buffer for input and output */
+    float coeff[] = {0.03168934384971104, 0.09506803154913313,
+        0.09506803154913313, 0.03168934384971104, 1.0, -1.459029062228061,
+        0.9103690002900686, -0.19782518726431944};
+    float input[] = {0.0, 0.5877852522924731, 0.9510565162951535,
+        0.9510565162951536, 0.5877852522924732, 1.2246467991473532e-16,
+        -0.587785252292473, -0.9510565162951535, -0.9510565162951536,
+        -0.5877852522924734, -2.4492935982947064e-16};
+    float expected[] = {0.0, 0.018626528969685335, 0.11319459096964525,
+        0.32463019812532173, 0.5923640432356142, 0.7675688414948406,
+        0.7122468297940586, 0.3902110581408493, -0.10366672513274929,
+        -0.5836716529057598, -0.8564583705870229};
+    float w[ARRAY_SIZE(coeff)/2] = {0};
+    iir_process(input, input, ARRAY_SIZE(input), coeff, w, ARRAY_SIZE(coeff));
+    TEST_ASSERT_EQUAL_FLOAT_ARRAY(expected, input, ARRAY_SIZE(input));
+}
+
 
 int main(void)
 {
@@ -136,5 +155,6 @@ int main(void)
     RUN_TEST(test_convolution_filter_response);
     RUN_TEST(test_third_order_impulse);
     RUN_TEST(test_third_order_response);
+    RUN_TEST(test_same_buffer_in_out);
     return UNITY_END();
 }
