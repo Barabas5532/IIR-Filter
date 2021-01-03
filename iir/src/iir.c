@@ -4,55 +4,35 @@
 #include <stdio.h>
 #endif
 
+//from https://stackoverflow.com/questions/50588879/how-to-implement-iir-filter-in-c
 void iir_process(const float *input, float *output, int len, float *coef, float *w, int coeff_len)
 {
-    /* for each sample */
-    for(int i = 0; i < len; i++)
-    {
-        float sum;
-        float tmp;
+    int filterLength = coeff_len/2;
 
-        //update the state for the next sample
-        for(int j = 0; j < coeff_len/2; j++)
-        {
-            if(j == 0)
-            {
-                //input sample * a0
-                sum = coef[coeff_len/2] * input[i];
-                // first tap gets its sample from the input summed with all taps
-                for(int k = coeff_len/2 + 1; k < coeff_len; k++)
-                {
-                    sum -= coef[k] * w[k - coeff_len/2];
-                }
-                tmp = w[0];
-                w[0] = sum;
-            }
-            else
-            {
-                // the others get it from the previous tap
-                float t;
-                t = tmp;
-                tmp = w[j];
-                w[j] = t;
-                
-            }
-        }
+    float *out = output;
+    const float *in = input;
+    float *b = coef;
+    float *a = &coef[filterLength];
 
-        //calculate the output sample
-        sum = 0;
-        for(int j = 0; j < coeff_len/2; j++)
-        {
-            sum += coef[j] * w[j];
+
+    const float a0 = a[0];
+    const float *a_end = &a[filterLength-1];
+    const float *out_start = out;
+    a++;
+    out--;
+    size_t m;
+    for (m = 0; m < len; m++) {
+        const float *b_macc = b;
+        const float *in_macc = in;
+        const float *a_macc = a;
+        const float *out_macc = out;
+        float b_acc = (*in_macc--) * (*b_macc++);
+        float a_acc = 0;
+        while (a_macc <= a_end && out_macc >= out_start) {
+            b_acc += (*in_macc--) * (*b_macc++);
+            a_acc += (*out_macc--) * (*a_macc++);
         }
-        output[i] = sum;
-#ifdef TEST
-        printf("\nSample %d\n", i);
-        printf("%s", "State is:\n");
-        for(int j = 0; j < coeff_len/2; j++)
-        {
-            printf("%d = %f\n", j, w[j]);
-        }
-        printf("Output %f\n", output[i]);
-#endif
+        *++out = (b_acc - a_acc) / a0;
+        in++;
     }
 }
