@@ -47,9 +47,9 @@ void test_div_by_two_unity_filter_response(void)
     /* create a coefficient array that corresponds to an FIR filter with an
      * impulse response of [ 1/2, 0, 0, 0 ...] */
 
-    /* 1   + 0 * z**-1
+    /* 1/2 + 0 * z**-1
      * -------------
-     * 1/2 + 0 * z**-1
+     * 1   + 0 * z**-1
      */
     float coeff[] = {0.5, 0, 1, 0};
     float impulse[] = {1, 0, 0, 0};
